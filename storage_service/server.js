@@ -11,13 +11,15 @@ const io = socketIo(server);
 const port = 3000;
 const upload = multer({ dest: 'uploads/' });
 
-const configFile = 'config.json';
+const configFile = '.config';
 const configData = JSON.parse(fs.readFileSync(configFile));
-const totalSpaceMB = configData.totalSpaceMB;
+const serverSpaceMB = configData.totalSpaceMB;
 
 const receivedFiles = [];
 
 let usedSpaceMB = 0;
+let numServers = 1;
+let totalSpaceMB = serverSpaceMB * numServers;
 
 app.use(cors()); // Enable CORS for all routes
 
@@ -34,14 +36,24 @@ app.post('/upload', upload.array('file'), (req, res) => {
         
         const sizeMB = (file.size / 1024 / 1024).toFixed(2);
         usedSpaceMB += parseFloat(sizeMB);
-        let usedPercentage = (usedSpaceMB / totalSpaceMB) * 100;
+        var usedPercentage = (usedSpaceMB / totalSpaceMB) * 100;
+
+        while (usedPercentage > 100) {
+          numServers += 1;
+          totalSpaceMB = numServers * serverSpaceMB;
+
+          usedPercentage = (usedSpaceMB / totalSpaceMB) * 100;
+        }
+
         usedPercentage = usedPercentage.toFixed(2);
 
         return {
         client: clientName,
         title: file.originalname,
         sizeMB: sizeMB, // Calculate file size in MB,
-        space: usedPercentage
+        space: usedPercentage,
+        numServers: numServers,
+        totalSpaceMB: totalSpaceMB
         }
     });
     console.log('Received files:', fileData);
@@ -56,6 +68,9 @@ app.post('/upload', upload.array('file'), (req, res) => {
 
 io.on('connection', (socket) => {
   console.log('A client connected.');
+  socket.emit('updateTotalSpace', totalSpaceMB);
+  socket.emit('updateNumServers', numServers);
+  socket.emit('updateFreeSpace', 100);
   socket.emit('updateFiles', receivedFiles); // Send the existing file data to the connected client
 
   socket.on('disconnect', () => {

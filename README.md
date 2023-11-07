@@ -11,10 +11,15 @@ You need to have nodejs (checked with v20.5.1) and npm (checked with v9.8.0) ins
 sudo apt update
 sudo apt upgrade
 sudo apt install -y curl
+sudo apt-get install y lsb-release
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt install -y nodejs
-mkdir uploads
 npm install socket.io express multer cors
+```
+
+Storage service
+```bash
+mkdir uploads
 ```
 
 To solve overwrite problems:
@@ -22,13 +27,6 @@ To solve overwrite problems:
 ```bash
 sudo dpkg --remove --force-remove-reinstreq libnode-dev
 sudo dpkg --remove --force-remove-reinstreq libnode72:amd64
-```
-## Configuration
-
-Configurate the maximum storage of your simulated server and the server ip at [config.json](config.json).
-
-```
-
 ```
 
 ## Execution

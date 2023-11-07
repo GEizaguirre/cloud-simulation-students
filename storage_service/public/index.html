@@ -69,10 +69,14 @@
     #free-space-info p {
       font-size: 24px; /* Increase the font size for the specific <p> element */
     }
+    #server-count {
+      font-size: 24px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
-  <h1>I am the server!</h1>
+  <h1>I am the cloud!</h1>
   <div id="content-container">
     <div id="file-titles">
       <h2>Received Files:</h2>
@@ -82,6 +86,7 @@
       <canvas id="myPieChart" width="300" height="300"></canvas>
       <p>Total Space: <span id="total-space" class="bold"></span>MB</p>
       <p>Free Space: <span id="free-space-percent" class="bold"></span>%</p>
+      <p>Total servers: <span id="total-servers" class="bold"></span></p>
     </div>
   </div>
 
@@ -89,9 +94,11 @@
   <!-- ... (your HTML code remains the same) -->
 
 <script>
+
   const fileList = document.getElementById('file-list');
   const freeSpacePercent = document.getElementById('free-space-percent');
   const totalSpace = document.getElementById('total-space');
+  const numServers = document.getElementById('total-servers');
   const socket = io();
 
   var ctx = document.getElementById("myPieChart").getContext("2d");
@@ -138,25 +145,44 @@
       listItem.innerHTML = `<span class="bold">${fileInfo.client} sent:</span> ${fileInfo.title} (${fileInfo.sizeMB} MB)`;
       fileList.appendChild(listItem);
       updatePieChart(fileInfo.space);
+      setTotalSpace(fileInfo.totalSpaceMB);
+      setTotalServers(fileInfo.numServers);
     });
   }
 
   // Function to set the initial total space (You can replace this with your actual total space value)
-  function setInitialTotalSpace() {
+  function setTotalSpace(space) {
+    totalSpace.textContent = space;
+  }
 
-    const initialTotalSpace = 1000;
-    totalSpace.textContent = initialTotalSpace;
+  function setTotalServers(num_servers) {
+    numServers.textContent = num_servers
+  }
+
+  function setFreeSpace(free_space) {
+    freeSpacePercent.textContent = free_space.toFixed(2);
   }
   
   // Listen for real-time updates
   socket.on('updateFiles', (fileData) => {
     updateFileList(fileData);
   });
+
+  socket.on('updateTotalSpace', (totalSpace) => {
+    setTotalSpace(totalSpace);
+  });
+
+  socket.on('updateNumServers', (numServers) => {
+    setTotalServers(numServers);
+  });
+
+  socket.on('updateFreeSpace', (freeSpace) => {
+    setFreeSpace(freeSpace);
+  });
   
   // Initial update
   socket.on('connect', () => {
-    setInitialTotalSpace(); // Set the initial total space when the server first connects
-    socket.emit('updateFiles', []);
+
   });
 </script>
 
