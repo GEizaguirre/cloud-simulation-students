@@ -14,7 +14,7 @@ sudo apt install -y curl
 sudo apt-get install y lsb-release
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt install -y nodejs
-npm install socket.io express multer cors
+npm install socket.io express multer cors ws
 ```
 
 Storage service

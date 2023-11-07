@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Client</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+
+    h1 {
+      background-color: #007BFF;
+      color: #fff;
+      padding: 10px;
+    }
+
+    button {
+      background-color: #aed5ff;
+      color: #007BFF;
+      border: none;
+      padding: 15px 30px;
+      margin: 10px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #8cb8ff;
+    }
+
+    #response {
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+      font-size: 18px;
+    }
+
+    input {
+      font-size: 16px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>I am a client device</h1>
+  
+  <input type="text" id="userName" placeholder="Enter your name">
+
+  <button onclick="getGreeting()">Get Greeting</button>
+  <button onclick="getCurrentHour()">Get Current Hour</button>
+  <button onclick="getRandomNumber()">Get Random Number</button>
+
+  <div id="response"></div>
+
+  <script>
+    const serverIP = "localhost";
+    const responseDiv = document.getElementById('response');
+
+    function displayResponse(response) {
+      responseDiv.innerHTML = JSON.stringify(response, null, 2);
+    }
+
+    function getUserName() {
+      return document.getElementById('userName').value;
+    }
+
+    function getGreeting() {
+      const userName = getUserName();
+      fetch(`http://${serverIP}:3000/greeting?name=${userName}`)
+        .then((response) => response.json())
+        .then((data) => displayResponse(data));
+    }
+
+    function getCurrentHour() {
+      const userName = getUserName();
+      fetch(`http://${serverIP}:3000/current-hour?name=${userName}`)
+        .then((response) => response.json())
+        .then((data) => displayResponse(data));
+    }
+
+    function getRandomNumber() {
+      const userName = getUserName();
+      fetch(`http://${serverIP}:3000/random-number?name=${userName}`)
+        .then((response) => response.json())
+        .then((data) => displayResponse(data));
+    }
+  </script>
+</body>
+</html>
