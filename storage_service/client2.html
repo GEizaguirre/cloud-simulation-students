@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="shortcut icon" href="#" />
+  <title>File Upload</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    h1 {
+      background-color: #333;
+      color: #fff;
+      padding: 10px;
+      margin: 0;
+    }
+    .container {
+      max-width: 400px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    }
+    #drop-area {
+      border: 2px dashed #ccc;
+      text-align: center;
+      padding: 20px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    #drop-area.dragging {
+      background-color: #eee;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    input[type="text"] {
+      width: 70%; /* Adjust the width to leave space for the button */
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #333;
+      color: #fff;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Drag and Drop Files</h1>
+  <div class="container">
+    <label for="clientName">Your Name:</label>
+    <div>
+      <input type="text" id="clientName" placeholder="Enter your name">
+      <button id="submitButton">Submit</button>
+    </div>
+    <div id="drop-area">
+      <p>Drag & Drop files here</p>
+    </div>
+  </div>
+
+  <script>
+    const serverIP = "localhost";
+    const dropArea = document.getElementById('drop-area');
+    const clientNameInput = document.getElementById('clientName');
+    const submitButton = document.getElementById('submitButton');
+
+    submitButton.addEventListener('click', () => {
+      const clientName = clientNameInput.value;
+      if (!clientName) {
+        alert('Please enter your client name.');
+        return;
+      }
+
+      clientNameInput.value = clientName;
+      clientNameInput.disabled = true;
+      clientNameInput.style.backgroundColor = '#eee';
+    });
+
+    dropArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropArea.classList.add('dragging');
+    });
+
+    dropArea.addEventListener('dragleave', () => {
+      dropArea.classList.remove('dragging');
+    });
+
+    dropArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropArea.classList.remove('dragging');
+
+      const clientName = clientNameInput.value;
+      if (!clientName) {
+        alert('Please enter your client name.');
+        return;
+      }
+
+      const files = e.dataTransfer.files;
+      // Use FormData to send files to the server via HTTP
+      const formData = new FormData();
+      for (const file of files) {
+        formData.append('file', file);
+      }
+      formData.append('clientName', clientName);
+
+      
+
+      // Send files to the server using fetch
+      fetch('http://'+serverIP+':3000/upload', {
+        method: 'POST',
+        body: formData,
+      })
+      .then((response) => response.text())
+      .then((data) => console.log(data))
+      .catch((error) => console.error(error));
+    });
+  </script>
+</body>
+</html>
