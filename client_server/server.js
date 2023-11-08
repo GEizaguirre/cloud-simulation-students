@@ -9,7 +9,7 @@ const wss = new WebSocket.Server({ server });
 
 app.use(cors()); // Enable CORS for all routes
 
-const port = 3000;
+const port = 3001;
 
 app.use(express.json());
 

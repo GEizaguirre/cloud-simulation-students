@@ -73,21 +73,21 @@
 
     function getGreeting() {
       const userName = getUserName();
-      fetch(`http://${serverIP}:3000/greeting?name=${userName}`)
+      fetch(`http://${serverIP}:3001/greeting?name=${userName}`)
         .then((response) => response.json())
         .then((data) => displayResponse(data));
     }
 
     function getCurrentHour() {
       const userName = getUserName();
-      fetch(`http://${serverIP}:3000/current-hour?name=${userName}`)
+      fetch(`http://${serverIP}:3001/current-hour?name=${userName}`)
         .then((response) => response.json())
         .then((data) => displayResponse(data));
     }
 
     function getRandomNumber() {
       const userName = getUserName();
-      fetch(`http://${serverIP}:3000/random-number?name=${userName}`)
+      fetch(`http://${serverIP}:3001/random-number?name=${userName}`)
         .then((response) => response.json())
         .then((data) => displayResponse(data));
     }
