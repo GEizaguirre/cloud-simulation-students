@@ -29,7 +29,28 @@ sudo dpkg --remove --force-remove-reinstreq libnode-dev
 sudo dpkg --remove --force-remove-reinstreq libnode72:amd64
 ```
 
-## Execution
+## Execution - client service mode ([client_server](client_server/) directory)
+
+### Server
+
+```bash
+node server.js
+```
+then just connect to the server UI opening a browser and browsing
+
+```
+http://localhost:3001/
+```
+
+### Client
+
+In client.html, subsitute "localhost" by the server private ip. It can be running the following command in the server 
+```
+ip a
+```
+Open the [client1.html](client_server/client1.html) in a browser.
+
+## Execution - storage mode ([storage_service](storage_service/) directory)
 
 ### Server
 
@@ -44,5 +65,8 @@ http://localhost:3000/
 
 ### Client
 
-Open the [client.html](client.html) in a browser.
-
+In client.html, subsitute "localhost" by the server private ip. It can be running the following command in the server 
+```
+ip a
+```
+Open the [client2.html](storage_service/client2.html) in a browser.
