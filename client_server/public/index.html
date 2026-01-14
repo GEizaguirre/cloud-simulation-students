@@ -1,90 +1,150 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Real-Time Updates with Request History</title>
+  <title>Client</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
       text-align: center;
       margin: 0;
       padding: 0;
+      background-color: #f5f5f5;
     }
 
-    header {
-      background-color: #3498db;
-      color: white;
+    h1 {
+      background-color: #007BFF;
+      color: #fff;
+      padding: 10px;
+    }
+
+    button {
+      background-color: #aed5ff;
+      color: #007BFF;
+      border: none;
+      padding: 15px 30px;
+      margin: 10px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #8cb8ff;
+      color: #fff;
+    }
+
+    #response {
       padding: 20px;
-      font-size: 24px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+      font-size: 18px;
+      margin: 20px auto;
+      max-width: 600px;
+      min-height: 50px;
     }
 
-    main {
-      margin: 20px;
-      padding: 20px;
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: 0px 0px 10px 0px #888888;
-    }
-
-    .request-history {
-      max-height: 150px;
-      overflow-y: auto;
+    input {
+      font-size: 16px;
+      padding: 10px;
       border: 1px solid #ccc;
-      padding: 5px;
-      margin-bottom: 10px;
+      border-radius: 5px;
+      margin: 10px;
+      width: 250px;
+    }
+
+    .config-section {
+      background-color: #e9ecef;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #ccc;
     }
   </style>
 </head>
 <body>
-  <header>Welcome to Real-Time Updates with Request History</header>
-  <main>
-    <h1>Greetings</h1>
-    <div class="request-history" id="greeting-history"></div>
+  <h1>I am a client device</h1>
+  
+  <div class="config-section">
+    <p><strong>Step 1:</strong> Enter Teacher's IP Address (e.g., 192.168.1.50)</p>
+    <input type="text" id="serverIP" placeholder="Teacher's IP Address">
+  </div>
 
-    <h1>Current Hour</h1>
-    <div class="request-history" id="hour-history"></div>
+  <div>
+    <p><strong>Step 2:</strong> Enter your Name & Click a Button</p>
+    <input type="text" id="userName" placeholder="Enter your name">
+    <br>
+    <button onclick="getGreeting()">Get Greeting</button>
+    <button onclick="getCurrentHour()">Get Current Hour</button>
+    <button onclick="getRandomNumber()">Get Random Number</button>
+  </div>
 
-    <h1>Random Number</h1>
-    <div class="request-history" id="random-number-history"></div>
+  <div id="response">Waiting for server response...</div>
 
-    <script>
-      // Create a WebSocket connection to the server
-      const socket = new WebSocket(`ws://${window.location.host}`);
+  <script>
+    const responseDiv = document.getElementById('response');
+    const ipInput = document.getElementById('serverIP');
 
-      // Function to update request history
-      function updateRequestHistory(requestType, historyElement, data) {
-        const newItem = document.createElement('p');
-        text_content = data.message || data.userName + ': '
-        if (data.hour){
-            text_content += data.hour
-        } else if (data.number) {
-            text_content += data.number
-        }
+    // AUTO-FILL LOGIC: 
+    // If the student accesses this page via the server (e.g., http://192.168.1.5:3001),
+    // this will automatically fill the input with that IP.
+    if (window.location.hostname && window.location.hostname !== "") {
+      ipInput.value = window.location.hostname;
+    } else {
+      // Default fallback if opened as a local file
+      ipInput.value = "localhost"; 
+    }
 
-        newItem.textContent = text_content
-        historyElement.appendChild(newItem);
+    function displayResponse(response) {
+      responseDiv.innerHTML = JSON.stringify(response, null, 2);
+      responseDiv.style.borderColor = "#28a745"; // Green border on success
+    }
 
-        // Remove the oldest entry if there are more than 5 entries
-        if (historyElement.childElementCount > 5) {
-          historyElement.removeChild(historyElement.firstElementChild);
-        }
-      }
+    function displayError(error) {
+      responseDiv.innerHTML = "Error: " + error.message + "<br><small>Check the IP address and ensure the server is running.</small>";
+      responseDiv.style.color = "red";
+    }
 
-      // Handle messages received from the server
-      socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
+    function getUserName() {
+      const name = document.getElementById('userName').value;
+      return name ? name : "Anonymous Student";
+    }
 
-        if (data.message) {
-          updateRequestHistory('greeting', document.getElementById('greeting-history'), data);
-        } else if (data.userName && data.hour) {
-          updateRequestHistory('hour', document.getElementById('hour-history'), data);
-        } else if (data.userName && data.number) {
-          updateRequestHistory('random-number', document.getElementById('random-number-history'), data);
-        }
-      };
-    </script>
-  </main>
+    // New helper function to get the dynamic IP
+    function getServerUrl(endpoint) {
+      const ip = document.getElementById('serverIP').value;
+      // Remove any trailing slash if the user typed one
+      const cleanIp = ip.replace(/\/$/, ""); 
+      return `http://${cleanIp}:3001/${endpoint}`;
+    }
+
+    function getGreeting() {
+      const userName = getUserName();
+      const url = getServerUrl(`greeting?name=${userName}`);
+      
+      fetch(url)
+        .then((response) => response.json())
+        .then((data) => displayResponse(data))
+        .catch((err) => displayError(err));
+    }
+
+    function getCurrentHour() {
+      const userName = getUserName();
+      const url = getServerUrl(`current-hour?name=${userName}`);
+
+      fetch(url)
+        .then((response) => response.json())
+        .then((data) => displayResponse(data))
+        .catch((err) => displayError(err));
+    }
+
+    function getRandomNumber() {
+      const userName = getUserName();
+      const url = getServerUrl(`random-number?name=${userName}`);
+
+      fetch(url)
+        .then((response) => response.json())
+        .then((data) => displayResponse(data))
+        .catch((err) => displayError(err));
+    }
+  </script>
 </body>
 </html>

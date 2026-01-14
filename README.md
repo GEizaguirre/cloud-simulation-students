@@ -36,10 +36,29 @@ sudo dpkg --remove --force-remove-reinstreq libnode72:amd64
 ```bash
 node server.js
 ```
-then just connect to the server UI opening a browser and browsing
+
+then, get the server's local IP
+
+**Linux:**
+```bash
+ip a
+```
+
+**macOS:**
+```bash
+ifconfig | grep "inet "
+```
+
+open the server interface at:
 
 ```
-http://localhost:3001/
+localhost:3001/server.html
+```
+
+then, ask the students to connect to the Client browsing:
+
+```
+http://<SERVER_IP>:3001/
 ```
 
 ### Client
@@ -52,21 +71,4 @@ Open the [client1.html](client_server/client1.html) in a browser.
 
 ## Execution - storage mode ([storage_service](storage_service/) directory)
 
-### Server
-
-```bash
-node server.js
-```
-then just connect to the server UI opening a browser and browsing
-
-```
-http://localhost:3000/
-```
-
-### Client
-
-In client.html, subsitute "localhost" by the server private ip. It can be running the following command in the server 
-```
-ip a
-```
-Open the [client2.html](storage_service/client2.html) in a browser.
+Do the same, but with the files in the [storage_service](storage_service/) directory. Use the port 3000 instead.

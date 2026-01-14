@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Server UI</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      background-color: #333;
+      color: #fff;
+      padding: 10px;
+      margin: 0;
+      text-align: center;
+      width: 100%;
+    }
+    #content-container {
+      display: flex;
+      justify-content: space-between;
+      width: 80%;
+      max-width: 1500px;
+      margin: 20px;
+    }
+    #file-titles {
+      background-color: #fff;
+      border-radius: 5px;
+      padding: 15px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+      flex: 3;
+      overflow: auto;
+      margin-right: 10px;
+    }
+    #free-space-info {
+      background-color: #fff;
+      border-radius: 5px;
+      padding: 20px; /* Increase the padding for the proportional size */
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+      flex: 1;
+      width: 35%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-around;
+    }
+    canvas {
+      width: 300px; /* Increase the size of the pie chart */
+      height: 300px; /* Increase the size of the pie chart */
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      overflow-y: auto;
+      max-height: 300px;
+    }
+    li {
+      margin: 5px 0;
+      font-size: 20px; /* Increase the font size for the proportional size */
+    }
+    .bold {
+      font-weight: bold;
+    }
+    #free-space-info p {
+      font-size: 24px; /* Increase the font size for the specific <p> element */
+    }
+    #server-count {
+      font-size: 24px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>I am the cloud!</h1>
+  <div id="content-container">
+    <div id="file-titles">
+      <h2>Received Files:</h2>
+      <ul id="file-list"></ul>
+    </div>
+    <div id="free-space-info">
+      <canvas id="myPieChart" width="300" height="300"></canvas>
+      <p>Total Space: <span id="total-space" class="bold"></span>MB</p>
+      <p>Free Space: <span id="free-space-percent" class="bold"></span>%</p>
+      <p>Total servers: <span id="total-servers" class="bold"></span></p>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <!-- ... (your HTML code remains the same) -->
+
+<script>
+
+  const fileList = document.getElementById('file-list');
+  const freeSpacePercent = document.getElementById('free-space-percent');
+  const totalSpace = document.getElementById('total-space');
+  const numServers = document.getElementById('total-servers');
+  const socket = io();
+
+  var ctx = document.getElementById("myPieChart").getContext("2d");
+
+  const data_origin = {
+    labels: ['Used Space', 'Remaining Space'],
+    datasets: [{
+      data: [0, 100],
+      backgroundColor: ['red', 'green'], // You can customize colors here
+    }],
+  };
+
+  const config = {
+    type: 'pie',
+    data: data_origin,
+    options: {
+      plugins: {
+        legend: {
+          labels: {
+            font: {
+              size: 20, // Increase the font size for the legend
+            }
+          }
+        }
+      }
+    }
+  };
+  
+    var myPieChart = new Chart(ctx, config);
+  
+  // Create a function to update the pie chart
+  function updatePieChart(usedSpace) {
+    var remainingSpace = 100 - usedSpace;
+    var newData = [usedSpace, remainingSpace];
+    myPieChart.data.datasets[0].data = newData;
+    myPieChart.update();
+    freeSpacePercent.textContent = remainingSpace.toFixed(2);
+  }
+  
+  function updateFileList(fileData) {
+    fileList.innerHTML = '';
+    fileData.slice(-15).forEach((fileInfo) => {
+      const listItem = document.createElement('li');
+      listItem.innerHTML = `<span class="bold">${fileInfo.client} sent:</span> ${fileInfo.title} (${fileInfo.sizeMB} MB)`;
+      fileList.appendChild(listItem);
+      updatePieChart(fileInfo.space);
+      setTotalSpace(fileInfo.totalSpaceMB);
+      setTotalServers(fileInfo.numServers);
+    });
+  }
+
+  // Function to set the initial total space (You can replace this with your actual total space value)
+  function setTotalSpace(space) {
+    totalSpace.textContent = space;
+  }
+
+  function setTotalServers(num_servers) {
+    numServers.textContent = num_servers
+  }
+
+  function setFreeSpace(free_space) {
+    freeSpacePercent.textContent = free_space.toFixed(2);
+  }
+  
+  // Listen for real-time updates
+  socket.on('updateFiles', (fileData) => {
+    updateFileList(fileData);
+  });
+
+  socket.on('updateTotalSpace', (totalSpace) => {
+    setTotalSpace(totalSpace);
+  });
+
+  socket.on('updateNumServers', (numServers) => {
+    setTotalServers(numServers);
+  });
+
+  socket.on('updateFreeSpace', (freeSpace) => {
+    setFreeSpace(freeSpace);
+  });
+  
+  // Initial update
+  socket.on('connect', () => {
+
+  });
+</script>
+
+</body>
+</html>

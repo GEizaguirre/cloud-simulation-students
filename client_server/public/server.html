@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-Time Updates with Request History</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #3498db;
+      color: white;
+      padding: 20px;
+      font-size: 24px;
+    }
+
+    main {
+      margin: 20px;
+      padding: 20px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px 0px #888888;
+    }
+
+    .request-history {
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 5px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header>Welcome to Real-Time Updates with Request History</header>
+  <main>
+    <h1>Greetings</h1>
+    <div class="request-history" id="greeting-history"></div>
+
+    <h1>Current Hour</h1>
+    <div class="request-history" id="hour-history"></div>
+
+    <h1>Random Number</h1>
+    <div class="request-history" id="random-number-history"></div>
+
+    <script>
+      // Create a WebSocket connection to the server
+      const socket = new WebSocket(`ws://${window.location.host}`);
+
+      // Function to update request history
+      function updateRequestHistory(requestType, historyElement, data) {
+        const newItem = document.createElement('p');
+        text_content = data.message || data.userName + ': '
+        if (data.hour){
+            text_content += data.hour
+        } else if (data.number) {
+            text_content += data.number
+        }
+
+        newItem.textContent = text_content
+        historyElement.appendChild(newItem);
+
+        // Remove the oldest entry if there are more than 5 entries
+        if (historyElement.childElementCount > 5) {
+          historyElement.removeChild(historyElement.firstElementChild);
+        }
+      }
+
+      // Handle messages received from the server
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.message) {
+          updateRequestHistory('greeting', document.getElementById('greeting-history'), data);
+        } else if (data.userName && data.hour) {
+          updateRequestHistory('hour', document.getElementById('hour-history'), data);
+        } else if (data.userName && data.number) {
+          updateRequestHistory('random-number', document.getElementById('random-number-history'), data);
+        }
+      };
+    </script>
+  </main>
+</body>
+</html>
